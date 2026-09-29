@@ -60,7 +60,8 @@ async function bootstrap(): Promise<void> {
   });
 
   const port = config.get<number>('PORT', 3000);
-  await app.listen(port, '0.0.0.0');
+  const host = config.get<string>('HOST', '0.0.0.0');
+  await app.listen(port, host);
 }
 
 void bootstrap();

@@ -7,7 +7,7 @@ The files in this directory are production templates. Replace the example domain
 3. Copy the application to `/opt/naravich-cdn`, run `npm ci && npm run build` in both packages, then run `npm run migration:run` in `backend`.
 4. Put the production API environment at `/etc/naravich-cdn/api.env`. Use a least-privilege database account and long random values for `JWT_SECRET` and `API_KEY_PEPPER`.
 5. Install `naravich-cdn-api.service` and both backup units in `/etc/systemd/system/`. Copy `backup.env.example` to `/etc/naravich-cdn/backup.env`, set mode `0600`, then enable the API and timer.
-6. Install `nginx.conf` as the site configuration, change `cdn.example.com`, validate with `nginx -t`, and add TLS with your normal certificate workflow.
+6. Install `nginx.conf` as the `cdn.naravich.com` site configuration, validate with `nginx -t`, and add TLS after the DNS record points to the VPS.
 
 ```bash
 sudo systemctl daemon-reload
