@@ -5,4 +5,5 @@ coverage/
 storage/*
 !storage/.gitkeep
 npm-debug.log*
+*.tsbuildinfo
 .DS_Store
