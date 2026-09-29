@@ -1,0 +1,23 @@
+[Unit]
+Description=Portal LINE webhook relay
+After=network.target
+
+[Service]
+Type=simple
+User=portal-line
+Group=portal-line
+WorkingDirectory=/opt/portal-line
+# Config is read from /opt/portal-line/.env
+ExecStart=/usr/bin/node src/server.js
+Restart=on-failure
+RestartSec=5
+# The app waits up to 30s for in-flight retries before exiting.
+TimeoutStopSec=40
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/portal-line/logs
+
+[Install]
+WantedBy=multi-user.target

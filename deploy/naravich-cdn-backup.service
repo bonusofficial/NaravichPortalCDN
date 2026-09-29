@@ -1,0 +1,14 @@
+[Unit]
+Description=Back up Naravich CDN database and storage
+
+[Service]
+Type=oneshot
+User=naravich-cdn
+Group=naravich-cdn
+EnvironmentFile=/etc/naravich-cdn/backup.env
+ExecStart=/opt/naravich-cdn/deploy/backup.sh
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+NoNewPrivileges=true
+PrivateTmp=true

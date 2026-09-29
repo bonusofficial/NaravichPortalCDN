@@ -1,0 +1,11 @@
+[Unit]
+Description=Nightly Naravich CDN backup
+
+[Timer]
+OnCalendar=*-*-* 02:30:00 Asia/Bangkok
+Persistent=true
+RandomizedDelaySec=10m
+Unit=naravich-cdn-backup.service
+
+[Install]
+WantedBy=timers.target

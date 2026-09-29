@@ -1,0 +1,21 @@
+[Unit]
+Description=Naravich CDN NestJS API
+After=network.target mariadb.service mysql.service
+
+[Service]
+Type=simple
+User=naravich-cdn
+Group=naravich-cdn
+WorkingDirectory=/opt/naravich-cdn/backend
+EnvironmentFile=/etc/naravich-cdn/api.env
+ExecStart=/usr/bin/node dist/main.js
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/naravich-cdn/storage
+
+[Install]
+WantedBy=multi-user.target
