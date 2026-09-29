@@ -27,6 +27,7 @@ async function seed(): Promise<void> {
       name: process.env.SEED_ADMIN_NAME ?? 'Local Administrator',
       email,
       passwordHash: await hash(password, 12),
+      mustChangePassword: true,
       role: UserRole.ADMIN,
       isActive: true,
       mfaEnabled: false,
