@@ -74,7 +74,7 @@
 | POST | `/assets/:id/reprocess` | สร้าง output ใหม่จาก original |
 | PATCH | `/settings/:section` | persist whitelist settings (admin) |
 
-Endpoint เดิมทั้งหมดดูใน `backend/README.md` และ Swagger `http://localhost:3000/docs`
+Endpoint เดิมทั้งหมดดูใน `backend/README.md` และ Swagger local `http://localhost:3000/docs` หรือ production `https://cdn.naravich.com/docs`
 
 ## ผลตรวจล่าสุด
 
@@ -87,17 +87,29 @@ Endpoint เดิมทั้งหมดดูใน `backend/README.md` แ�
 - [x] E2E: create key with CIDR → rotate grace → old key ผ่าน auth ระหว่าง grace → revoke
 - [x] Browser smoke: login, Overview โหลด live data, Settings แสดง runtime/persisted/account-security controls
 - [x] `deploy/backup.sh` ผ่าน `bash -n`
+- [x] Production E2E ผ่าน Plesk/Nginx: dashboard 200, health 200, login 201, create project 201, upload/compress 201 และ public WebP 200
+- [x] Production smoke data/files ถูกล้างหลังทดสอบ และ initial admin ยังถูกบังคับเปลี่ยนรหัสผ่าน
+- [x] Production backup รอบแรกผ่าน SHA-256 ทั้ง database dump และ storage archive
 
-## Blocker ภายนอกระบบ
+## สถานะ Production (29 กันยายน 2026)
 
-เครื่องพัฒนาใช้ดิสก์ประมาณ 98.5% ซึ่งสูงกว่า `DISK_STOP_UPLOAD_PERCENT=88` จึงตั้งใจตอบ `507 DISK_CAPACITY_CRITICAL` และ health เป็น degraded ขณะนี้ยังทดสอบ successful upload ใหม่ไม่ได้จนกว่าผู้ใช้จะเพิ่ม/เคลียร์พื้นที่อย่างปลอดภัย ห้ามลบไฟล์ของผู้ใช้เองโดยเดา
+- URL: `https://cdn.naravich.com` (Cloudflare proxy → Plesk/Nginx)
+- VPS: `root@82.26.104.243`; Debian 13 + Plesk
+- Git checkout: `/opt/naravich-cdn`, branch `main`, user `naravich-cdn`
+- API: systemd `naravich-cdn-api.service`, bind เฉพาะ `127.0.0.1:3100`
+- Database: MariaDB `naravich_cdn`, userเฉพาะ `naravich_cdn`; secrets อยู่ `/etc/naravich-cdn/api.env` mode 0640
+- Storage: `/srv/naravich-cdn/storage`; production disk healthy ประมาณ 16.91% used ตอน deploy
+- Dashboard document root: `/var/www/vhosts/naravich.com/cdn.naravich.com`
+- TLS: Let's Encrypt ของ `cdn.naravich.com`; HTTP redirect ไป HTTPS
+- Backup: `naravich-cdn-backup.timer` ทุกวัน 02:30 Asia/Bangkok, retention 14 วัน, เก็บใน `/srv/backups/naravich-cdn`
+- Initial production credential เก็บ root-only ที่ `/root/naravich-cdn-initial-admin.txt`; ห้าม commit และระบบบังคับเปลี่ยน password หลัง login แรก
 
-## งานที่ยังต้องทำก่อน production จริง
+เครื่องพัฒนา local ยังเคยมี disk usage ประมาณ 98.5% จึงอาจตอบ 507 ตาม safety guard แต่ไม่ใช่ blocker ของ production VPS
 
-- [ ] หลัง disk ต่ำกว่า 88% ทดสอบ browser flow upload → CDN URL → reprocess → delete/restore อีกรอบ
-- [ ] เปลี่ยน dev admin password, `JWT_SECRET`, `API_KEY_PEPPER` และใช้ MySQL least-privilege user
-- [ ] เปลี่ยน domain/path ใน `deploy/nginx.conf` และ env production แล้วเปิด HTTPS
-- [ ] ติดตั้ง/enable systemd units และรัน restore drill; backup ควรถูก replicate ออกนอก VPS
+## งาน operations ที่ยังควรทำ
+
+- [ ] ทำ restore drill จาก `database.sql.gz` + `storage.tar.gz` บน environment แยก
+- [ ] replicate backup ออกจาก VPS ไปอีกเครื่องหรือ storage แยก failure domain
 - [ ] ถ้าต้องการ bandwidth delivery จริง ให้ aggregate Nginx access logs/metrics ลง DB; Dashboard ไม่เดาตัวเลขนี้
 - [ ] ถ้าจะรัน Nest หลาย process/หลายเครื่อง ให้ย้าย rate-limit bucket จาก memory ไป Redis/shared store
 - [ ] Email invitation/forgot-password ยังไม่มี SMTP integration; ปัจจุบัน admin ส่ง temporary passwordผ่านช่องทางที่ปลอดภัย
@@ -137,12 +149,12 @@ npm run dev
 ## Prompt สำหรับ Claude ทำต่อ
 
 ```text
-อ่าน CLAUDE_HANDOFF.md, backend/README.md, dashboard/README.md และ deploy/README.md ก่อน รักษาการแก้ไขเดิมทั้งหมด ระบบใช้ local VPS filesystem ห้ามเปลี่ยนไป Cloudflare งานหลักที่เหลือคือให้ผู้ใช้แก้ disk usage ต่ำกว่า 88% แล้วทดสอบ browser flow upload → เปิด CDN URL → reprocess → delete/restore และปรับ production env/domain/secret โดยห้ามลบไฟล์ผู้ใช้เอง จากนั้นรัน backend lint/test, dashboard lint/build และบันทึกผลจริงในเอกสารนี้ อย่าเปิด UI prototype หรือ claim metric/security/backup ใดที่ backend/OS ยังไม่ได้ทำจริง
+อ่าน CLAUDE_HANDOFF.md, backend/README.md, dashboard/README.md และ deploy/README.md ก่อน รักษาการแก้ไขเดิมทั้งหมด ระบบ production ใช้ local filesystem บน VPS และ Cloudflare เป็น proxy/DNS ไม่ใช่ storage ห้ามเปลี่ยนไป external object storage เอง ถ้าแก้โค้ดให้รัน backend lint/test และ dashboard lint/build ก่อน deploy งาน operations ที่เหลือคือ off-site backup/restore drill, bandwidth metrics, shared rate limit เมื่อ scale หลาย process และ SMTP integration อย่า log/commit credential หรือ claim metric/security/backup ที่ยังไม่ได้ตรวจจริง
 ```
 
 ## ข้อควรระวัง
 
-- Workspace นี้ยังไม่ใช่ Git repository
+- Workspace เป็น Git repository และ push `main` ไป `https://github.com/bonusofficial/NaravichPortalCDN`
 - อย่า log JWT, password, API key เต็ม, MFA secret, `JWT_SECRET` หรือ `API_KEY_PEPPER`
 - Full API key แสดงครั้งเดียวเท่านั้น
 - Nginx serve storage แบบ read-only และต้อง deny `/files/.originals` กับ dot paths ทั้งหมด
