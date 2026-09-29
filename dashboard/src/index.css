@@ -1,3 +1,5 @@
+@import 'https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/Anuphan/var/Anuphan[wght].css';
+
 /*
  * Naravich Sure CDN Manager — design tokens and base styles.
  * Structure follows ../DESIGN.md (hairlines, restrained elevation, 6/8/12/16px radii,
@@ -104,7 +106,7 @@
   --space-8: 32px;
 
   /* Type */
-  --font-sans: 'SF Pro Display', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Anuphan', sans-serif;
   --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
   --text-2xs: 11px;
   --text-xs: 12px;
